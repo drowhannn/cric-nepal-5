@@ -1,6 +1,16 @@
 export default defineAppConfig({
   ui: {
-    primary: 'orange',
-    gray: 'gray',
+    primary: 'blue',
+    gray: 'slate',
+    input: {
+      default: {
+        size: 'lg',
+      },
+    },
+    button: {
+      default: {
+        size: 'lg',
+      },
+    },
   },
 })
