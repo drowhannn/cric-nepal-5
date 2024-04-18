@@ -10,7 +10,7 @@ const url = `${process.env.DATABASE_URL}`
 const db = drizzle(postgres(url, { ssl: 'require', max: 1 }))
 
 migrate(db, {
-  migrationsFolder: './db/drizzle_migrations',
+  migrationsFolder: './db/migrations',
 }).then(() =>
 
   console.log('🎉 Migration complete'),
