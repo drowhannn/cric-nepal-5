@@ -14,4 +14,7 @@ export default defineNuxtConfig({
       stylistic: true,
     },
   },
+  vue: {
+    propsDestructure: true,
+  },
 })

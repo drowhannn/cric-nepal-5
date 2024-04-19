@@ -11,6 +11,11 @@ const items = ref([
         icon: 'i-mdi-monitor',
         link: '/admin',
       },
+      {
+        name: 'Player',
+        icon: 'i-mdi-account-group',
+        link: '/admin/player',
+      },
     ],
   },
 
@@ -35,7 +40,6 @@ async function logout() {
       <div class="lg:hidden">
         <UIcon
           name="i-mdi-menu"
-          size="24"
           @click="showSideBar = !showSideBar"
         />
       </div>
@@ -96,7 +100,7 @@ async function logout() {
                 }
               "
             >
-              <div class="flex items-center gap-5 font-bold text-gray-700 dark:text-gray-300">
+              <div class="flex text-base items-center gap-5 font-bold text-gray-700 dark:text-gray-300">
                 {{ item?.menu?.name }}
               </div>
             </div>
@@ -107,12 +111,11 @@ async function logout() {
             >
               <NuxtLink
                 :to="sub_item?.link"
-                class="hover:text-primary-500 flex items-center gap-5 border-r-2 border-transparent px-5 py-1 "
+                class="hover:text-primary-500 text-lg flex items-center gap-5 border-r-2 border-transparent px-5 py-1 "
               >
                 <UIcon
                   :name="sub_item?.icon"
                   class="max-w-[20px] text-inherit"
-                  size="17px"
                 />
                 <div>{{ sub_item?.name }}</div>
               </NuxtLink>

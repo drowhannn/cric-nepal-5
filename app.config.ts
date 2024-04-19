@@ -12,5 +12,8 @@ export default defineAppConfig({
         size: 'lg',
       },
     },
+    table: {
+      wrapper: 'border rounded-lg overflow-md',
+    },
   },
 })
