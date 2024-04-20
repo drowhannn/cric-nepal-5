@@ -1,6 +1,6 @@
 import { createInsertSchema } from 'drizzle-zod'
 import z from 'zod'
-import { player } from '../schema'
+import { player, tournament } from '../schema'
 
 export const signInSchema = z.object({
   email: z.string().email(),
@@ -21,3 +21,11 @@ const playerBaseSchema = createInsertSchema(player).omit({
 })
 
 export const createPlayerSchema = playerBaseSchema
+
+const tournamentBaseSchema = createInsertSchema(tournament).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+})
+
+export const createTournamentSchema = tournamentBaseSchema
