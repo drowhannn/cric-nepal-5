@@ -65,8 +65,6 @@ export const playerRelations = relations(player, ({ many }) => ({
   manOfTheMatchGames: many(game),
 }))
 
-export const tournamentStatusEnum = pgEnum('tournament_status', ['scheduled', 'in_progress', 'completed'])
-
 export const gameTypeEnum = pgEnum('game_type', ['odi', 't20i', 't20', 'od'])
 
 export const tournament = pgTable('tournament', {
@@ -85,7 +83,6 @@ export const tournament = pgTable('tournament', {
   startDate: date('start_date'),
   endDate: date('end_date'),
   type: gameTypeEnum('type').notNull(),
-  status: tournamentStatusEnum('status').notNull().default('scheduled'),
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow(),
 })

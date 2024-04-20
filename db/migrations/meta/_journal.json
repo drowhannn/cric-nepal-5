@@ -8,6 +8,13 @@
       "when": 1713406051690,
       "tag": "0000_common_thunderbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1713582404829,
+      "tag": "0001_furry_warpath",
+      "breakpoints": true
     }
   ]
 }
