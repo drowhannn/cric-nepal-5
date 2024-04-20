@@ -1,27 +1,14 @@
-import { and, ilike } from 'drizzle-orm'
 import { opponent } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
-  const db = useDB()
-
-  const query = getQuery(event)
-
-  const search = query.search || ''
-
-  const qs = []
-
-  if (search) {
-    qs.push(
-      ilike(opponent.name, `%${search}%`),
-    )
-  }
-
-  const results = await db.query.opponent.findMany(
+  return list(
+    event,
     {
-      orderBy: [opponent.id],
-      where: and(...qs),
+      table: opponent,
+      searchFields: [
+        opponent.name,
+      ],
+      orderBy: opponent.id,
     },
   )
-
-  return results
 })
