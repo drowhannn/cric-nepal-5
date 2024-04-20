@@ -21,6 +21,11 @@ const items = ref([
         icon: 'i-mdi-trophy',
         link: '/admin/tournament',
       },
+      {
+        name: 'Opponent',
+        icon: 'i-mdi-account-group',
+        link: '/admin/opponent',
+      },
     ],
   },
 
