@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const path = event.path
 
-  if (!isAdmin && path.startsWith('/admin/bo')) {
+  if (!isAdmin && path.startsWith('/api/bo')) {
     return createError({
       statusCode: 401,
       message: 'Unauthorized',
