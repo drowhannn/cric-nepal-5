@@ -9,6 +9,6 @@ definePageMeta({
     <g1>
       Edit Player
     </g1>
-    <PlayerForm class="mt-4" />
+    <AdminFormPlayer class="mt-4" />
   </div>
 </template>
