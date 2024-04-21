@@ -1,0 +1,1 @@
+ALTER TABLE "game" ADD COLUMN "title" varchar(256) NOT NULL;

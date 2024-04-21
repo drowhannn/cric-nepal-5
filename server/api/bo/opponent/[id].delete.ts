@@ -1,7 +1,7 @@
 import { opponent } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
-  return remove(
+  return await remove(
     event,
     {
       table: opponent,

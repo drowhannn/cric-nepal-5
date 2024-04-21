@@ -119,6 +119,9 @@ export const gameStatusEnum = pgEnum('game_status', ['scheduled', 'in_progress',
 
 export const game = pgTable('game', {
   id: serial('id').primaryKey(),
+  title: varchar('title', {
+    length: 256,
+  }).notNull(),
   slug: varchar('slug', {
     length: 256,
   })

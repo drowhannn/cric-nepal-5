@@ -1,4 +1,4 @@
-import { and, eq, ilike } from 'drizzle-orm'
+import { and, eq, ilike, sql } from 'drizzle-orm'
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import type { H3Event } from 'h3'
 import { z, type ZodObject } from 'zod'
@@ -7,14 +7,17 @@ type ListConfig = {
   table: PgTable
   searchFields: PgColumn[]
   orderBy: PgColumn
+  noPagination?: boolean
 }
 
 export const list = async (event: H3Event, config: ListConfig) => {
   const db = useDB()
 
-  const query = getQuery(event)
-
-  const search = query.search || ''
+  const { search, page, pageSize } = await getValidatedQuery(event, z.object({
+    search: z.string().optional(),
+    page: z.coerce.number().default(1),
+    pageSize: z.coerce.number().default(10),
+  }).parse)
 
   const qs = []
 
@@ -26,9 +29,26 @@ export const list = async (event: H3Event, config: ListConfig) => {
     }
   }
 
-  const results = db.select().from(config.table).where(and(...qs)).orderBy(config.orderBy)
+  const query = db.select().from(config.table).where(and(...qs)).orderBy(config.orderBy)
 
-  return results
+  if (config.noPagination) {
+    const results = await query
+    return results
+  }
+
+  const results = await query.limit(pageSize).offset((page - 1) * pageSize)
+
+  const totalCount = await db.select({ count: sql<number>`count(*)` }).from(config.table).where(and(...qs))
+
+  return {
+    pagination: {
+      page,
+      pages: Math.ceil(totalCount[0]!.count / pageSize),
+      total: Number(totalCount[0]!.count),
+      size: pageSize,
+    },
+    results,
+  }
 }
 
 type CreateConfig = {

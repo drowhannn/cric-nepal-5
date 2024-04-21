@@ -1,12 +1,15 @@
 import { opponent } from '~/db/schema'
-import { createOpponentSchema } from '~/db/zod'
 
 export default defineEventHandler(async (event) => {
-  return await update(
+  return await list(
     event,
     {
       table: opponent,
-      updateSchema: createOpponentSchema,
+      searchFields: [
+        opponent.name,
+      ],
+      orderBy: opponent.id,
+      noPagination: true,
     },
   )
 })

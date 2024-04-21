@@ -2,7 +2,7 @@ import { player } from '~/db/schema'
 import { createPlayerSchema } from '~/db/zod'
 
 export default defineEventHandler(async (event) => {
-  return update(
+  return await update(
     event,
     {
       table: player,

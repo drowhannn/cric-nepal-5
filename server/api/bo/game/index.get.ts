@@ -1,14 +1,14 @@
-import { tournament } from '~/db/schema'
+import { game } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
   return await list(
     event,
     {
-      table: tournament,
+      table: game,
       searchFields: [
-        tournament.title,
+        game.title,
       ],
-      orderBy: tournament.id,
+      orderBy: game.id,
     },
   )
 })

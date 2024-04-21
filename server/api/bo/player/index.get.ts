@@ -1,7 +1,7 @@
 import { player } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
-  return list(
+  return await list(
     event,
     {
       table: player,

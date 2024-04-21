@@ -26,6 +26,11 @@ const items = ref([
         icon: 'i-mdi-account-group',
         link: '/admin/opponent',
       },
+      {
+        name: 'Game',
+        icon: 'i-mdi-cricket',
+        link: '/admin/game',
+      },
     ],
   },
 

@@ -1,10 +1,10 @@
-import { tournament } from '~/db/schema'
+import { game } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
   return await remove(
     event,
     {
-      table: tournament,
+      table: game,
     },
   )
 })

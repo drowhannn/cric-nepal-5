@@ -1,7 +1,7 @@
 import { tournament } from '~/db/schema'
 
 export default defineEventHandler(async (event) => {
-  return retrieve(
+  return await retrieve(
     event,
     {
       table: tournament,
