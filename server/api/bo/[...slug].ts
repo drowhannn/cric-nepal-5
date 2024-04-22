@@ -5,7 +5,6 @@ import { crudRouters } from '~/server/utils/rest'
 const router = crudRouters([
   {
     table: player,
-    prefix: '/player',
     searchFields: [
       player.fullName,
     ],
@@ -13,7 +12,6 @@ const router = crudRouters([
   },
   {
     table: game,
-    prefix: '/game',
     searchFields: [
       game.title,
     ],
@@ -21,7 +19,6 @@ const router = crudRouters([
   },
   {
     table: tournament,
-    prefix: '/tournament',
     searchFields: [
       tournament.title,
     ],
@@ -29,7 +26,6 @@ const router = crudRouters([
   },
   {
     table: opponent,
-    prefix: '/opponent',
     searchFields: [
       opponent.name,
     ],

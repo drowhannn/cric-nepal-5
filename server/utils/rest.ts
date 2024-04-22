@@ -1,5 +1,5 @@
 import { and, eq, ilike, sql } from 'drizzle-orm'
-import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
+import { getTableConfig, type PgColumn, type PgTable } from 'drizzle-orm/pg-core'
 import type { H3Event } from 'h3'
 import { z, type ZodObject } from 'zod'
 
@@ -290,6 +290,11 @@ type CrudRoutersConfig = {
 export const crudRouters = (configs: CrudRoutersConfig[]) => {
   let router = createRouter()
   for (const config of configs) {
+    if (!config.prefix) {
+      const { name } = getTableConfig(config.table)
+      config.prefix = `/${name}`
+    }
+    console.log('config.prefix', config.prefix)
     router = crudRouter({ ...config, router })
   }
   return router
