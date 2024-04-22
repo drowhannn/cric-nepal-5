@@ -188,67 +188,78 @@ export const retrieveUpdateRemoveRouter = (config: RetrieveUpdateRemoveRouterCon
   return router
 }
 
-// type crudConfig = {
-//   table: PgTable
-//   list: {
-//     searchFields: PgColumn[]
-//     orderBy: PgColumn
-//   }
-//   create: {
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     createSchema: ZodObject<any>
-//   }
-//   update: {
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     updateSchema: ZodObject<any>
-//   }
-//   includeNoPaginationListRoute?: boolean
-// }
+type crudConfig = {
+  table: PgTable
+  prefix?: string
+  router?: ReturnType<typeof createRouter>
+  list: {
+    searchFields: PgColumn[]
+    orderBy: PgColumn
+  }
+  create: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createSchema: ZodObject<any>
+  }
+  update: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    updateSchema: ZodObject<any>
+  }
+  includeNoPaginationListRoute?: boolean
+}
 
-// export const crudRouter = (config: crudConfig) => {
-//   const router = createRouter()
+export const crudRouter = (config: crudConfig) => {
+  let router
+  if (config.router) {
+    router = config.router
+  }
+  else {
+    router = createRouter()
+  }
 
-//   router.get('/', defineEventHandler(async (event: H3Event,
-//   ) => await list(event, {
-//     table: config.table,
-//     ...config.list,
-//   })),
-//   )
+  if (!config.prefix)
+    config.prefix = ''
 
-//   if (config.includeNoPaginationListRoute) {
-//     router.get('/all', defineEventHandler(async (event: H3Event,
-//     ) => await list(event, {
-//       table: config.table,
-//       ...config.list,
-//       noPagination: true,
-//     })),
-//     )
-//   }
+  router.get(config.prefix + '/', defineEventHandler(async (event: H3Event,
+  ) => await list(event, {
+    table: config.table,
+    ...config.list,
+  })),
+  )
 
-//   router.post('/', defineEventHandler(async (event: H3Event,
-//   ) => await create(event, {
-//     table: config.table,
-//     ...config.create,
-//   })),
-//   )
+  if (config.includeNoPaginationListRoute) {
+    router.get(config.prefix + '/all', defineEventHandler(async (event: H3Event,
+    ) => await list(event, {
+      table: config.table,
+      ...config.list,
+      noPagination: true,
+    })),
+    )
+  }
 
-//   router.get('/:id', defineEventHandler(async (event: H3Event,
-//   ) => await retrieve(event, {
-//     table: config.table,
-//   })),
-//   )
+  router.post(config.prefix + '/', defineEventHandler(async (event: H3Event,
+  ) => await create(event, {
+    table: config.table,
+    ...config.create,
+  })),
+  )
 
-//   router.patch('/:id', defineEventHandler(async (event: H3Event,
-//   ) => await update(event, {
-//     table: config.table,
-//     ...config.update,
-//   })),
-//   )
+  router.get(config.prefix + '/:id', defineEventHandler(async (event: H3Event,
+  ) => await retrieve(event, {
+    table: config.table,
+  })),
+  )
 
-//   router.delete('/:id', defineEventHandler(async (event: H3Event,
-//   ) => await remove(event, {
-//     table: config.table,
-//   })),
-//   )
-//   return router
-// }
+  router.patch(config.prefix + '/:id', defineEventHandler(async (event: H3Event,
+  ) => await update(event, {
+    table: config.table,
+    ...config.update,
+  })),
+  )
+
+  router.delete(config.prefix + '/:id', defineEventHandler(async (event: H3Event,
+  ) => await remove(event, {
+    table: config.table,
+  })),
+  )
+  return router
+}
