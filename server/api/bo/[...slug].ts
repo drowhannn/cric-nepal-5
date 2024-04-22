@@ -6,45 +6,37 @@ const router = crudRouters([
   {
     table: player,
     prefix: '/player',
-    list: {
-      searchFields: [
-        player.fullName,
-      ],
-      orderBy: player.id,
-    },
+    searchFields: [
+      player.fullName,
+    ],
+    orderBy: player.id,
     createAndUpdateSchema: createPlayerSchema,
   },
   {
     table: game,
     prefix: '/game',
-    list: {
-      searchFields: [
-        game.title,
-      ],
-      orderBy: game.id,
-    },
+    searchFields: [
+      game.title,
+    ],
+    orderBy: game.id,
     createAndUpdateSchema: createGameSchema,
   },
   {
     table: tournament,
     prefix: '/tournament',
-    list: {
-      searchFields: [
-        tournament.title,
-      ],
-      orderBy: tournament.id,
-    },
+    searchFields: [
+      tournament.title,
+    ],
+    orderBy: tournament.id,
     createAndUpdateSchema: createTournamentSchema,
   },
   {
     table: opponent,
     prefix: '/opponent',
-    list: {
-      searchFields: [
-        opponent.name,
-      ],
-      orderBy: opponent.id,
-    },
+    searchFields: [
+      opponent.name,
+    ],
+    orderBy: opponent.id,
     createAndUpdateSchema: createOpponentSchema,
   },
 ])
