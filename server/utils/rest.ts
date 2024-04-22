@@ -195,10 +195,8 @@ type CrudConfig = {
   table: PgTable
   prefix?: string
   router?: ReturnType<typeof createRouter>
-  list: {
-    searchFields: PgColumn[]
-    orderBy: PgColumn
-  }
+  searchFields: PgColumn[]
+  orderBy: PgColumn
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createSchema?: ZodObject<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,6 +204,10 @@ type CrudConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createAndUpdateSchema?: ZodObject<any>
   includeNoPaginationListRoute?: boolean
+  noPaginationListConfig?: {
+    searchFields?: PgColumn[]
+    orderBy?: PgColumn
+  }
 }
 
 export const crudRouter = (config: CrudConfig) => {
@@ -223,7 +225,8 @@ export const crudRouter = (config: CrudConfig) => {
   router.get(config.prefix + '/', defineEventHandler(async (event: H3Event,
   ) => await list(event, {
     table: config.table,
-    ...config.list,
+    searchFields: config.searchFields,
+    orderBy: config.orderBy,
   })),
   )
 
@@ -231,7 +234,8 @@ export const crudRouter = (config: CrudConfig) => {
     router.get(config.prefix + '/all', defineEventHandler(async (event: H3Event,
     ) => await list(event, {
       table: config.table,
-      ...config.list,
+      searchFields: config.noPaginationListConfig?.searchFields || config.searchFields,
+      orderBy: config.noPaginationListConfig?.orderBy || config.orderBy,
       noPagination: true,
     })),
     )
@@ -268,10 +272,8 @@ export const crudRouter = (config: CrudConfig) => {
 type CrudRoutersConfig = {
   table: PgTable
   prefix?: string
-  list: {
-    searchFields: PgColumn[]
-    orderBy: PgColumn
-  }
+  searchFields: PgColumn[]
+  orderBy: PgColumn
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createSchema?: ZodObject<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -279,6 +281,10 @@ type CrudRoutersConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createAndUpdateSchema?: ZodObject<any>
   includeNoPaginationListRoute?: boolean
+  noPaginationListConfig?: {
+    searchFields?: PgColumn[]
+    orderBy?: PgColumn
+  }
 }
 
 export const crudRouters = (configs: CrudRoutersConfig[]) => {
