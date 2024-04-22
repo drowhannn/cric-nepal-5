@@ -195,8 +195,8 @@ type CrudConfig = {
   table: PgTable
   prefix?: string
   router?: ReturnType<typeof createRouter>
-  searchFields: PgColumn[]
-  orderBy: PgColumn
+  searchFields?: PgColumn[]
+  orderBy?: PgColumn
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createSchema?: ZodObject<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -272,8 +272,8 @@ export const crudRouter = (config: CrudConfig) => {
 type CrudRoutersConfig = {
   table: PgTable
   prefix?: string
-  searchFields: PgColumn[]
-  orderBy: PgColumn
+  searchFields?: PgColumn[]
+  orderBy?: PgColumn
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createSchema?: ZodObject<any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

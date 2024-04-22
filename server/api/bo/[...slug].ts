@@ -9,7 +9,6 @@ const router = crudRouters([
     searchFields: [
       player.fullName,
     ],
-    orderBy: player.id,
     createAndUpdateSchema: createPlayerSchema,
   },
   {
@@ -18,7 +17,6 @@ const router = crudRouters([
     searchFields: [
       game.title,
     ],
-    orderBy: game.id,
     createAndUpdateSchema: createGameSchema,
   },
   {
@@ -27,7 +25,6 @@ const router = crudRouters([
     searchFields: [
       tournament.title,
     ],
-    orderBy: tournament.id,
     createAndUpdateSchema: createTournamentSchema,
   },
   {
@@ -36,7 +33,6 @@ const router = crudRouters([
     searchFields: [
       opponent.name,
     ],
-    orderBy: opponent.id,
     createAndUpdateSchema: createOpponentSchema,
   },
 ])
