@@ -7,8 +7,8 @@ import { createRouter, defineEventHandler } from 'h3'
 
 type ListConfig = {
   table: PgTable
-  searchFields: PgColumn[]
-  orderBy: PgColumn
+  searchFields?: PgColumn[]
+  orderBy?: PgColumn
   noPagination?: boolean
 }
 
@@ -23,7 +23,7 @@ export const list = async (event: H3Event, config: ListConfig) => {
 
   const qs = []
 
-  if (search) {
+  if (search && config.searchFields) {
     for (const field of config.searchFields) {
       qs.push(
         ilike(field, `%${search}%`),
@@ -31,7 +31,10 @@ export const list = async (event: H3Event, config: ListConfig) => {
     }
   }
 
-  const query = db.select().from(config.table).where(and(...qs)).orderBy(config.orderBy)
+  const query = db.select().from(config.table).where(and(...qs))
+
+  if (config.orderBy)
+    query.orderBy(config.orderBy)
 
   if (config.noPagination) {
     const results = await query
