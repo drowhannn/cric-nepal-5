@@ -188,7 +188,7 @@ export const retrieveUpdateRemoveRouter = (config: RetrieveUpdateRemoveRouterCon
   return router
 }
 
-type crudConfig = {
+type CrudConfig = {
   table: PgTable
   prefix?: string
   router?: ReturnType<typeof createRouter>
@@ -196,18 +196,16 @@ type crudConfig = {
     searchFields: PgColumn[]
     orderBy: PgColumn
   }
-  create: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    createSchema: ZodObject<any>
-  }
-  update: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateSchema: ZodObject<any>
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createSchema?: ZodObject<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateSchema?: ZodObject<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createAndUpdateSchema?: ZodObject<any>
   includeNoPaginationListRoute?: boolean
 }
 
-export const crudRouter = (config: crudConfig) => {
+export const crudRouter = (config: CrudConfig) => {
   let router
   if (config.router) {
     router = config.router
@@ -239,7 +237,7 @@ export const crudRouter = (config: crudConfig) => {
   router.post(config.prefix + '/', defineEventHandler(async (event: H3Event,
   ) => await create(event, {
     table: config.table,
-    ...config.create,
+    createSchema: config.createSchema || config.createAndUpdateSchema || z.object({}),
   })),
   )
 
@@ -252,7 +250,7 @@ export const crudRouter = (config: crudConfig) => {
   router.patch(config.prefix + '/:id', defineEventHandler(async (event: H3Event,
   ) => await update(event, {
     table: config.table,
-    ...config.update,
+    updateSchema: config.updateSchema || config.createAndUpdateSchema || z.object({}),
   })),
   )
 
@@ -261,5 +259,29 @@ export const crudRouter = (config: crudConfig) => {
     table: config.table,
   })),
   )
+  return router
+}
+
+type CrudRoutersConfig = {
+  table: PgTable
+  prefix?: string
+  list: {
+    searchFields: PgColumn[]
+    orderBy: PgColumn
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createSchema?: ZodObject<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateSchema?: ZodObject<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createAndUpdateSchema?: ZodObject<any>
+  includeNoPaginationListRoute?: boolean
+}
+
+export const crudRouters = (configs: CrudRoutersConfig[]) => {
+  let router = createRouter()
+  for (const config of configs) {
+    router = crudRouter({ ...config, router })
+  }
   return router
 }

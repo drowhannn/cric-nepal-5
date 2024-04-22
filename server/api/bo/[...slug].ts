@@ -1,80 +1,52 @@
 import { game, opponent, player, tournament } from '~/db/schema'
 import { createGameSchema, createOpponentSchema, createPlayerSchema, createTournamentSchema } from '~/db/zod'
-import { crudRouter } from '~/server/utils/rest'
+import { crudRouters } from '~/server/utils/rest'
 
-let router = crudRouter({
-  table: player,
-  prefix: '/player',
-  list: {
-    searchFields: [
-      player.fullName,
-    ],
-    orderBy: player.id,
+const router = crudRouters([
+  {
+    table: player,
+    prefix: '/player',
+    list: {
+      searchFields: [
+        player.fullName,
+      ],
+      orderBy: player.id,
+    },
+    createAndUpdateSchema: createPlayerSchema,
   },
-  create: {
-    createSchema: createPlayerSchema,
+  {
+    table: game,
+    prefix: '/game',
+    list: {
+      searchFields: [
+        game.title,
+      ],
+      orderBy: game.id,
+    },
+    createAndUpdateSchema: createGameSchema,
   },
-  update: {
-    updateSchema: createPlayerSchema,
+  {
+    table: tournament,
+    prefix: '/tournament',
+    list: {
+      searchFields: [
+        tournament.title,
+      ],
+      orderBy: tournament.id,
+    },
+    createAndUpdateSchema: createTournamentSchema,
   },
-  includeNoPaginationListRoute: true,
-})
-
-router = crudRouter({
-  table: game,
-  prefix: '/game',
-  router,
-  list: {
-    searchFields: [
-      game.title,
-    ],
-    orderBy: game.id,
+  {
+    table: opponent,
+    prefix: '/opponent',
+    list: {
+      searchFields: [
+        opponent.name,
+      ],
+      orderBy: opponent.id,
+    },
+    createAndUpdateSchema: createOpponentSchema,
   },
-  create: {
-    createSchema: createGameSchema,
-  },
-  update: {
-    updateSchema: createGameSchema,
-  },
-  includeNoPaginationListRoute: true,
-})
-
-router = crudRouter({
-  table: tournament,
-  prefix: '/tournament',
-  router,
-  list: {
-    searchFields: [
-      tournament.title,
-    ],
-    orderBy: tournament.id,
-  },
-  create: {
-    createSchema: createTournamentSchema,
-  },
-  update: {
-    updateSchema: createTournamentSchema,
-  },
-  includeNoPaginationListRoute: true,
-})
-
-router = crudRouter({
-  table: opponent,
-  prefix: '/opponent',
-  router,
-  list: {
-    searchFields: [
-      opponent.name,
-    ],
-    orderBy: opponent.id,
-  },
-  create: {
-    createSchema: createOpponentSchema,
-  },
-  update: {
-    updateSchema: createOpponentSchema,
-  },
-  includeNoPaginationListRoute: true,
-})
+])
 
 export default useBase('/api/bo', router.handler)
