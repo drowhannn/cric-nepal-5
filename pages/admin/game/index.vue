@@ -16,10 +16,6 @@ const columns = [
     key: 'startTime',
     label: 'Start Time',
   },
-  {
-    key: 'endTime',
-    label: 'End Time',
-  },
 ]
 </script>
 
