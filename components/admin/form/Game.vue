@@ -41,7 +41,7 @@ const { fields, submitForm, closeForm, isFormSubmitting, editingId } = await use
     >
       <UInput
         v-model="fields.startTime"
-        type="date"
+        type="datetime-local"
       />
     </UFormGroup>
     <UFormGroup
@@ -50,7 +50,7 @@ const { fields, submitForm, closeForm, isFormSubmitting, editingId } = await use
     >
       <UInput
         v-model="fields.endTime"
-        type="date"
+        type="datetime-local"
       />
     </UFormGroup>
     <UFormGroup
