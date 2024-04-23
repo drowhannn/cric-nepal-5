@@ -127,8 +127,7 @@ export const game = pgTable('game', {
   })
     .unique()
     .notNull(),
-  startTime: timestamp('start_time', { mode: 'string' }).defaultNow(),
-  endTime: timestamp('end_time', { mode: 'string' }).defaultNow(),
+  startTime: timestamp('start_time', { mode: 'string' }),
   venue: varchar('venue', {
     length: 256,
   }),
