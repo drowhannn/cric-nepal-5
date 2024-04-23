@@ -1,4 +1,4 @@
-import { and, eq, ilike, sql } from 'drizzle-orm'
+import { and, eq, getTableColumns, ilike, sql } from 'drizzle-orm'
 import { getTableConfig, type PgColumn, type PgTable } from 'drizzle-orm/pg-core'
 import type { H3Event } from 'h3'
 import { z, type ZodObject } from 'zod'
@@ -9,6 +9,7 @@ type ListConfig = {
   table: PgTable
   searchFields?: PgColumn[]
   orderBy?: PgColumn
+  excludeFields?: PgColumn[]
   noPagination?: boolean
 }
 
@@ -31,10 +32,22 @@ export const list = async (event: H3Event, config: ListConfig) => {
     }
   }
 
-  const query = db.select().from(config.table).where(and(...qs))
+  let query
+  if (config.excludeFields && config.excludeFields.length) {
+    const columns = getTableColumns(config.table)
+    const includedColumns = Object.fromEntries(
+      // @ts-expect-error - what the heck
+      Object.entries(columns).filter(([_, value]: [string, PgColumn]) => !(config.excludeFields.includes(value))),
+    )
+    query = db.select({ ...includedColumns }).from(config.table)
+  }
+  else {
+    query = db.select().from(config.table)
+  }
+  query = query.where(and(...qs))
 
   if (config.orderBy)
-    query.orderBy(config.orderBy)
+    query = query.orderBy(config.orderBy)
 
   if (config.noPagination) {
     const results = await query
@@ -73,13 +86,27 @@ export const create = async (event: H3Event, config: CreateConfig) => {
 
 type RetrieveConfig = {
   table: PgTable
+  excludeFields?: PgColumn[]
 }
 
 export const retrieve = async (event: H3Event, config: RetrieveConfig) => {
   const db = useDB()
   const { id } = await getValidatedRouterParams(event, z.object({ id: z.coerce.number() }).parse)
+  let query
+  if (config.excludeFields && config.excludeFields.length) {
+    const columns = getTableColumns(config.table)
+    const includedColumns = Object.fromEntries(
+      // @ts-expect-error - what the heck
+      Object.entries(columns).filter(([_, value]: [string, PgColumn]) => !(config.excludeFields.includes(value))),
+    )
+    query = db.select({ ...includedColumns }).from(config.table)
+  }
+  else {
+    query = db.select().from(config.table)
+  }
   //   @ts-expect-error - Assume id column exists
-  const [result] = await db.select().from(config.table).where(eq(config.table.id, id))
+  query = query.where(eq(config.table.id, id))
+  const [result] = await query
   if (!result) throw new Error('Resource not found.')
   return result
 }
@@ -208,6 +235,9 @@ type CrudConfig = {
     searchFields?: PgColumn[]
     orderBy?: PgColumn
   }
+  excludeFields?: PgColumn[]
+  listExcludeFields?: PgColumn[]
+  retrieveExcludeFields?: PgColumn[]
 }
 
 export const crudRouter = (config: CrudConfig) => {
@@ -227,6 +257,7 @@ export const crudRouter = (config: CrudConfig) => {
     table: config.table,
     searchFields: config.searchFields,
     orderBy: config.orderBy,
+    excludeFields: config.listExcludeFields || config.excludeFields,
   })),
   )
 
@@ -237,6 +268,7 @@ export const crudRouter = (config: CrudConfig) => {
       searchFields: config.noPaginationListConfig?.searchFields || config.searchFields,
       orderBy: config.noPaginationListConfig?.orderBy || config.orderBy,
       noPagination: true,
+      excludeFields: config.listExcludeFields || config.excludeFields,
     })),
     )
   }
@@ -251,6 +283,7 @@ export const crudRouter = (config: CrudConfig) => {
   router.get(config.prefix + '/:id', defineEventHandler(async (event: H3Event,
   ) => await retrieve(event, {
     table: config.table,
+    excludeFields: config.retrieveExcludeFields || config.excludeFields,
   })),
   )
 
@@ -285,6 +318,9 @@ type CrudRoutersConfig = {
     searchFields?: PgColumn[]
     orderBy?: PgColumn
   }
+  excludeFields?: PgColumn[]
+  listExcludeFields?: PgColumn[]
+  retrieveExcludeFields?: PgColumn[]
 }
 
 export const crudRouters = (configs: CrudRoutersConfig[]) => {
