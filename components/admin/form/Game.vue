@@ -45,15 +45,6 @@ const { fields, submitForm, closeForm, isFormSubmitting, editingId } = await use
       />
     </UFormGroup>
     <UFormGroup
-      label="End Date Time"
-      name="endTime"
-    >
-      <UInput
-        v-model="fields.endTime"
-        type="datetime-local"
-      />
-    </UFormGroup>
-    <UFormGroup
       label="Venue"
       name="venue"
     >
