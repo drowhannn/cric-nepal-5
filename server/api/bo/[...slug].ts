@@ -9,6 +9,7 @@ const router = crudRouters([
       player.fullName,
     ],
     createAndUpdateSchema: createPlayerSchema,
+    includeNoPaginationListRoute: true,
   },
   {
     table: game,
@@ -16,6 +17,7 @@ const router = crudRouters([
       game.title,
     ],
     createAndUpdateSchema: createGameSchema,
+    includeNoPaginationListRoute: true,
   },
   {
     table: tournament,
@@ -23,6 +25,7 @@ const router = crudRouters([
       tournament.title,
     ],
     createAndUpdateSchema: createTournamentSchema,
+    includeNoPaginationListRoute: true,
   },
   {
     table: opponent,
@@ -30,6 +33,7 @@ const router = crudRouters([
       opponent.name,
     ],
     createAndUpdateSchema: createOpponentSchema,
+    includeNoPaginationListRoute: true,
   },
 ])
 
