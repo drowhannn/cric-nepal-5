@@ -1,3 +1,4 @@
+import type { SQL } from 'drizzle-orm'
 import { and, eq, getTableColumns, ilike, sql } from 'drizzle-orm'
 import { getTableConfig, type PgColumn, type PgTable } from 'drizzle-orm/pg-core'
 import type { H3Event } from 'h3'
@@ -5,65 +6,81 @@ import { z, type ZodObject } from 'zod'
 
 import { createRouter, defineEventHandler } from 'h3'
 
+export type UpdateWhereClause = (whereClause: SQL<unknown>[], routeQuery: Record<string, unknown>) => void
+
 type ListConfig = {
   table: PgTable
   searchFields?: PgColumn[]
   orderBy?: PgColumn
   excludeFields?: PgColumn[]
   noPagination?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  routeQuerySchema?: z.ZodObject<any>
+  updateWhereClause?: UpdateWhereClause
 }
+
+const listBaseQuerySchema = z.object({
+  search: z.string().optional(),
+  page: z.coerce.number().default(1),
+  pageSize: z.coerce.number().default(10),
+})
 
 export const list = async (event: H3Event, config: ListConfig) => {
   const db = useDB()
 
-  const { search, page, pageSize } = await getValidatedQuery(event, z.object({
-    search: z.string().optional(),
-    page: z.coerce.number().default(1),
-    pageSize: z.coerce.number().default(10),
-  }).parse)
+  const routeQuery = await getValidatedQuery(event, z.object(
+    {
+      ...listBaseQuerySchema.shape,
+      ...(config.routeQuerySchema ? config.routeQuerySchema.shape : {}),
+    },
+  ).parse)
 
-  const qs = []
+  const whereClause: SQL<unknown>[] = []
 
-  if (search && config.searchFields) {
+  if (routeQuery.search && config.searchFields) {
     for (const field of config.searchFields) {
-      qs.push(
-        ilike(field, `%${search}%`),
+      whereClause.push(
+        ilike(field, `%${routeQuery.search}%`),
       )
     }
   }
 
-  let query
+  if (config.updateWhereClause) {
+    config.updateWhereClause(whereClause, routeQuery)
+  }
+
+  let queryset
   if (config.excludeFields && config.excludeFields.length) {
     const columns = getTableColumns(config.table)
     const includedColumns = Object.fromEntries(
       // @ts-expect-error - what the heck
       Object.entries(columns).filter(([_, value]: [string, PgColumn]) => !(config.excludeFields.includes(value))),
     )
-    query = db.select({ ...includedColumns }).from(config.table)
+    queryset = db.select({ ...includedColumns }).from(config.table)
   }
   else {
-    query = db.select().from(config.table)
+    queryset = db.select().from(config.table)
   }
-  query = query.where(and(...qs))
+  queryset = queryset.where(and(...whereClause))
 
   if (config.orderBy)
-    query = query.orderBy(config.orderBy)
+    queryset = queryset.orderBy(config.orderBy)
 
   if (config.noPagination) {
-    const results = await query
+    const results = await queryset
     return results
   }
 
-  const results = await query.limit(pageSize).offset((page - 1) * pageSize)
+  const results = await queryset.limit(routeQuery.pageSize).offset((routeQuery.page - 1) * routeQuery.pageSize)
 
-  const totalCount = await db.select({ count: sql<number>`count(*)` }).from(config.table).where(and(...qs))
+  const totalCount = await db.select({ count: sql<number>`count(*)` }).from(config.table).where(and(...whereClause))
 
   return {
     pagination: {
-      page,
-      pages: Math.ceil(totalCount[0]!.count / pageSize),
+      page: routeQuery.page,
+      pages: Math.ceil(totalCount[0]!.count / routeQuery.pageSize),
       total: Number(totalCount[0]!.count),
-      size: pageSize,
+      size: routeQuery.pageSize,
     },
     results,
   }
@@ -142,81 +159,81 @@ export const remove = async (event: H3Event, config: DeleteConfig) => {
   }
 }
 
-type ListAndCreateRouterConfig = {
-  table: PgTable
-  list: {
-    searchFields: PgColumn[]
-    orderBy: PgColumn
-  }
-  create: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    createSchema: ZodObject<any>
-  }
-  includeNoPaginationListRoute?: boolean
-}
+// type ListAndCreateRouterConfig = {
+//   table: PgTable
+//   list: {
+//     searchFields: PgColumn[]
+//     orderBy: PgColumn
+//   }
+//   create: {
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//     createSchema: ZodObject<any>
+//   }
+//   includeNoPaginationListRoute?: boolean
+// }
 
-export const listAndCreateRouter = (config: ListAndCreateRouterConfig) => {
-  const router = createRouter()
+// export const listAndCreateRouter = (config: ListAndCreateRouterConfig) => {
+//   const router = createRouter()
 
-  router.get('/', defineEventHandler(async (event: H3Event,
-  ) => await list(event, {
-    table: config.table,
-    ...config.list,
-  })),
-  )
+//   router.get('/', defineEventHandler(async (event: H3Event,
+//   ) => await list(event, {
+//     table: config.table,
+//     ...config.list,
+//   })),
+//   )
 
-  if (config.includeNoPaginationListRoute) {
-    router.get('/all', defineEventHandler(async (event: H3Event,
-    ) => await list(event, {
-      table: config.table,
-      ...config.list,
-      noPagination: true,
-    })),
-    )
-  }
+//   if (config.includeNoPaginationListRoute) {
+//     router.get('/all', defineEventHandler(async (event: H3Event,
+//     ) => await list(event, {
+//       table: config.table,
+//       ...config.list,
+//       noPagination: true,
+//     })),
+//     )
+//   }
 
-  router.post('/', defineEventHandler(async (event: H3Event,
-  ) => await create(event, {
-    table: config.table,
-    ...config.create,
-  })),
-  )
+//   router.post('/', defineEventHandler(async (event: H3Event,
+//   ) => await create(event, {
+//     table: config.table,
+//     ...config.create,
+//   })),
+//   )
 
-  return router
-}
+//   return router
+// }
 
-type RetrieveUpdateRemoveRouterConfig = {
-  table: PgTable
-  update: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateSchema: ZodObject<any>
-  }
-}
+// type RetrieveUpdateRemoveRouterConfig = {
+//   table: PgTable
+//   update: {
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//     updateSchema: ZodObject<any>
+//   }
+// }
 
-export const retrieveUpdateRemoveRouter = (config: RetrieveUpdateRemoveRouterConfig) => {
-  const router = createRouter()
+// export const retrieveUpdateRemoveRouter = (config: RetrieveUpdateRemoveRouterConfig) => {
+//   const router = createRouter()
 
-  router.get('/:id', defineEventHandler(async (event: H3Event,
-  ) => await retrieve(event, {
-    table: config.table,
-  })),
-  )
+//   router.get('/:id', defineEventHandler(async (event: H3Event,
+//   ) => await retrieve(event, {
+//     table: config.table,
+//   })),
+//   )
 
-  router.put('/:id', defineEventHandler(async (event: H3Event,
-  ) => await update(event, {
-    table: config.table,
-    ...config.update,
-  })),
-  )
+//   router.put('/:id', defineEventHandler(async (event: H3Event,
+//   ) => await update(event, {
+//     table: config.table,
+//     ...config.update,
+//   })),
+//   )
 
-  router.delete('/:id', defineEventHandler(async (event: H3Event,
-  ) => await remove(event, {
-    table: config.table,
-  })),
-  )
+//   router.delete('/:id', defineEventHandler(async (event: H3Event,
+//   ) => await remove(event, {
+//     table: config.table,
+//   })),
+//   )
 
-  return router
-}
+//   return router
+// }
 
 type CrudConfig = {
   table: PgTable
@@ -238,6 +255,9 @@ type CrudConfig = {
   excludeFields?: PgColumn[]
   listExcludeFields?: PgColumn[]
   retrieveExcludeFields?: PgColumn[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listRouteQuerySchema?: z.ZodObject<any>
+  updateWhereClause?: UpdateWhereClause
 }
 
 export const crudRouter = (config: CrudConfig) => {
@@ -258,6 +278,8 @@ export const crudRouter = (config: CrudConfig) => {
     searchFields: config.searchFields,
     orderBy: config.orderBy,
     excludeFields: config.listExcludeFields || config.excludeFields,
+    routeQuerySchema: config.listRouteQuerySchema,
+    updateWhereClause: config.updateWhereClause,
   })),
   )
 
@@ -269,6 +291,8 @@ export const crudRouter = (config: CrudConfig) => {
       orderBy: config.noPaginationListConfig?.orderBy || config.orderBy,
       noPagination: true,
       excludeFields: config.listExcludeFields || config.excludeFields,
+      routeQuerySchema: config.listRouteQuerySchema,
+      updateWhereClause: config.updateWhereClause,
     })),
     )
   }
@@ -321,6 +345,9 @@ type CrudRoutersConfig = {
   excludeFields?: PgColumn[]
   listExcludeFields?: PgColumn[]
   retrieveExcludeFields?: PgColumn[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listRouteQuerySchema?: z.ZodObject<any>
+  updateWhereClause?: UpdateWhereClause
 }
 
 export const crudRouters = (configs: CrudRoutersConfig[]) => {
